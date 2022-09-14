@@ -51,12 +51,12 @@ void onPublish(const MqttClient*, const Topic& topic, const char* payload, size_
    blinkLed();
 }
 
-
 void setup() {
   Serial.begin(115200);
   setupWifi();
-  //setupWebServer();
+  delay(500);
   setupBroker();
+  delay(500);
   server.begin();
 
   pinMode(LED_PIN, OUTPUT);
@@ -94,9 +94,9 @@ void setupBroker() {
 
 void blinkLed() {
   digitalWrite(LED_PIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(300);                  // wait for a second
+  delay(50);                  // wait for a second
   digitalWrite(LED_PIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(300);  
+  delay(50);  
 }
 
 void executeBroker() {
@@ -152,7 +152,7 @@ void executeWebServer(){
             client.print("<h2>");
             client.print(sensorValue);
             client.println("</h2></body>");
-            client.println("<script>window.onload = function(e) { setTimeout(() => { location.reload(); }, 5000); }; </script>");
+            client.println("<script>window.onload = function(e) { setTimeout(() => { location.reload(); }, 1000); }; </script>");
             client.println("</html>");
             
             // The HTTP response ends with another blank line
