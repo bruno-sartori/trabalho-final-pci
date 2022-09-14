@@ -6,6 +6,8 @@ const char* password =  "sabukas99";
 
 MqttClient mqtt_client;
 
+int count = 0;
+
 void setupWifi() {
   if (strlen(ssid) == 0) {
     Serial.println("***** PLEASE MODIFY WIFI CREDENTIALS");
@@ -34,11 +36,13 @@ void setup() {
 }
 
 void executeMqttClient() {
-  mqtt_client.publish("test/test", "test client");
-  Serial.println("Sending message");
+  //const char* countChar = (const char*)count;
+  Serial.println(count);
+  mqtt_client.publish("test/test", "teste");
 }
 
 void loop() {
+  count++;
   executeMqttClient();
-  delay(10000);
+  delay(1000);
 }
