@@ -6,6 +6,9 @@ const char* password =  "sabukas99";
 
 MqttClient mqtt_client;
 
+int SENSOR_PORT = 36;
+int LED_PORT = 2;
+
 int count = 0;
 
 void setupWifi() {
@@ -32,17 +35,27 @@ void setup() {
 
   setupWifi();
 
+  pinMode(LED_PORT, OUTPUT);
+  pinMode(SENSOR_PORT, INPUT);
+
   mqtt_client.connect("192.168.2.138", 1883);
 }
 
 void executeMqttClient() {
-  //const char* countChar = (const char*)count;
-  Serial.println(count);
-  mqtt_client.publish("test/test", "teste");
+  int luminosity = analogRead(SENSOR_PORT);
+
+  if (luminosity > 500) {
+    digitalWrite(LED_PORT, HIGH);
+  } else {
+    digitalWrite(LED_PORT, LOW);  
+  }
+  
+  Serial.println(luminosity);
+  mqtt_client.publish("test/test", String(luminosity));
 }
 
 void loop() {
   count++;
   executeMqttClient();
-  delay(1000);
+  delay(500);
 }
