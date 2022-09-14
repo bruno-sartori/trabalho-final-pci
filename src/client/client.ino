@@ -41,7 +41,7 @@ void setup() {
   mqtt_client.connect("192.168.2.138", 1883);
 }
 
-void executeMqttClient() {
+void sendSensorValue() {
   int luminosity = analogRead(SENSOR_PORT);
 
   if (luminosity > 500) {
@@ -56,6 +56,6 @@ void executeMqttClient() {
 
 void loop() {
   count++;
-  executeMqttClient();
+  sendSensorValue();
   delay(500);
 }

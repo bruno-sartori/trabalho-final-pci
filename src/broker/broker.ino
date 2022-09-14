@@ -1,18 +1,8 @@
 #include "TinyMqtt.h"   // https://github.com/hsaturn/TinyMqtt
 #include <SPI.h>
 #include <WiFi.h>
-// #include <Ethernet.h>
 
 const int LED_PIN = 2;
-
-// Enter a MAC address and IP address for your controller below.
-// The IP address will be dependent on your local network:
-/*byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-};*/
-
-// IPAddress ip(192, 168, 2, 177);
-// EthernetServer server(80);
 
 // Set web server port number to 80
 WiFiServer server(80);
@@ -23,8 +13,6 @@ MqttClient mqtt_client(&broker);
 
 const char* ssid = "CASARTORI";
 const char* password = "sabukas99";
-
-
 
 // Variable to store the HTTP request
 String header;
@@ -43,20 +31,18 @@ void onPublish(const MqttClient*, const Topic& topic, const char* payload, size_
   Serial.print(", ");
   Serial.println(payload);
 
+  // Set sensor value which will be used by web server
   sensorValue = (char*)payload;
-
-  Serial.print("SENSOR VALUE: ");
-  Serial.println(sensorValue);
   
-   blinkLed();
+  // blink led so we can know when a mqtt message has arrived
+  blinkLed();
 }
 
 void setup() {
+  delay(300);
   Serial.begin(115200);
   setupWifi();
-  delay(500);
   setupBroker();
-  delay(500);
   server.begin();
 
   pinMode(LED_PIN, OUTPUT);
@@ -108,16 +94,20 @@ void executeWebServer(){
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
+    Serial.println("New Client.");          // print a message out in the serial port
+    
     currentTime = millis();
     previousTime = currentTime;
-    Serial.println("New Client.");          // print a message out in the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
+    
     while (client.connected() && currentTime - previousTime <= timeoutTime) {  // loop while the client's connected
       currentTime = millis();
+      
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
         Serial.write(c);                    // print it out the serial monitor
         header += c;
+        
         if (c == '\n') {                    // if the byte is a newline character
           // if the current line is blank, you got two newline characters in a row.
           // that's the end of the client HTTP request, so send a response:
@@ -129,29 +119,30 @@ void executeWebServer(){
             client.println("Connection: close");
             client.println();
             
-            // turns the GPIOs on and off
-            if (header.indexOf("GET /26/on") >= 0) {
-              Serial.println("GPIO 26 on");
-              // output26State = "on";
-              //digitalWrite(output26, HIGH);
+            // Manage routes if needed
+            if (header.indexOf("GET /test") >= 0) {
+              Serial.println("Client request /test route");
             }
             
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<head>");
+
+            // Set html metadata
+            client.println("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}</style></head>");
             
-            // Web Page Heading
+            // CSS to style the front-end 
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center; }</style>");
+            client.println("</head>");
+            
+            // Web Page Body
             client.println("<body><h1>ESP32 Web Server</h1>");
             client.print("<h2>");
             client.print(sensorValue);
             client.println("</h2></body>");
+            
+            // Javascript code to reload the page on 1s interval
             client.println("<script>window.onload = function(e) { setTimeout(() => { location.reload(); }, 1000); }; </script>");
             client.println("</html>");
             
